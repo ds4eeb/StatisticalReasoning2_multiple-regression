@@ -1,4 +1,4 @@
-Activity 9: Statistical reasoning 1: intro to models
+Activity 9: Statistical reasoning 2: multiple regression
 ================
 
 Welcome! This is the second statistical reasoning activity. We will
@@ -210,7 +210,7 @@ penguins %>%
 
 ------------------------------------------------------------------------
 
-2.  Run multiple regression on your own
+# 2. Run multiple regression on your own
 
 ------------------------------------------------------------------------
 

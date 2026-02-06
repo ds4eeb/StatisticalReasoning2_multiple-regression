@@ -1,6 +1,6 @@
 ---
-title: "Activity 9: Statistical reasoning 1: intro to models"
-subtitle: Feb. 4th, 2026, Calvin Munson
+title: "Activity 9: Statistical reasoning 2: multiple regression"
+subtitle: Feb. 6th, 2026, Calvin Munson
 format: gfm
 execute:
   warning: false
@@ -143,7 +143,7 @@ penguins %>%
 
 --------
 
-2. Run multiple regression on your own
+# 2. Run multiple regression on your own
 
 
 
