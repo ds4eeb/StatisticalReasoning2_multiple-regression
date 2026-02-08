@@ -1,5 +1,5 @@
-Activity 9: Statistical reasoning 2: multiple regression
-================
+# Activity 9: Statistical reasoning 2: multiple regression
+
 
 Welcome! This is the second statistical reasoning activity. We will
 learn how to implement multiple regression models using the `brms`
@@ -32,9 +32,9 @@ Let’s start by reading in the relevant packages
 
 ``` r
 library(brms) # for statistics
-library(tidyverse)
-library(ggeffects) # for the prediction plot
-library(palmerpenguins)
+library(tidyverse) # for data wrangling
+library(ggeffects) # for  prediction plots
+library(palmerpenguins) # data we'll be using
 ```
 
 ------------------------------------------------------------------------
@@ -53,7 +53,7 @@ Multiple regression is when we want to put more than one predictor
 variable into our model. The model equation would thus look something
 like this:
 
-$$y = intercept + slope1*variable1 + slope2*variable2$$
+$$y = intercept + slope_1 \times variable_1 + slope_2 \times variable_2$$
 
 We’re going to demonstrate how to use multiple regression on the palmer
 penguins dataset. First, though, we are going to start off with some
@@ -61,9 +61,9 @@ refresher on interpreting a simpler linear regression
 
 ------------------------------------------------------------------------
 
-## 1.1 Refresh on coefficient practice
+## 1.1 Refresh on coefficients
 
-This section: Univariate regression of flipper length \~ body mass
+This section: Univariate regression of flipper length ~ body mass
 
 ``` r
 penguins <- palmerpenguins::penguins
@@ -98,7 +98,7 @@ m.flip.mass <-
       file = "output/m.flip.mass")
 ```
 
-Assess the model:
+Assess the model fitting by looking at Rhat:
 
 ``` r
 summary(m.flip.mass)
@@ -132,8 +132,13 @@ plot(m.flip.mass)
 
 ![](README_files/figure-commonmark/unnamed-chunk-5-1.png)
 
-Looks like the chains converge nicely and the posterior distributions
-are smooth. Nice! Now let’s dig into the actual results:
+Looks like the chains converged nicely and the posterior distributions
+are smooth. Nice!
+
+Now let’s dig into the actual results by examining the parameter
+estimates. We can look at the posterior plots (just above) and look at
+the parameter estimates and 95% compatibility intervals from the model
+summary:
 
 ``` r
 summary(m.flip.mass)
@@ -161,21 +166,26 @@ summary(m.flip.mass)
 
 ### Q1.1: What is the effect of body mass on flipper length?
 
-1)  What is the effect of body mass on flipper length (e.g. the slope)?
-    Report your result using the units provided.
+1)  What is the magnitude of the relationship between body mass and
+    flipper length (e.g. the slope)? Report your result using the units
+    of these variables.
 
 2)  Do a quick visual estimate of the slope from the ggplot graph above
     (e.g. take two points and calculate the difference in y divided by
-    the difference in x). Does the model’s slope effect match up with
-    the slope from the ggplot?
+    the difference in x). What is your estimate? To what extent does the
+    model’s slope effect match up with your slope from the ggplot?
 
 ------------------------------------------------------------------------
 
 ### Q1.2: Can we claim that this effect is different from zero?
 
-Using what you learned last class, interpret whether or not the results
-of the slope seem to be different from zero. Why or why not are they
-different from zero?
+Using what you learned last class, interpret whether the slope seems to
+have a low or high probability of being different from zero. What do you
+conclude? Why or why not do you reach this conclusion?
+
+| Let’s also do this calculation more precisely by adding up the fraction of the posterior that is greater than zero. |
+|:---|
+| \### Q1.3: What is the probability that the slope is different from zero? Look at the output from the code you just ran. |
 
 ## 1.2 Additive models
 
@@ -191,21 +201,6 @@ penguins %>%
   geom_smooth(method = "lm")
 ```
 
-![](README_files/figure-commonmark/unnamed-chunk-7-1.png)
-
-------------------------------------------------------------------------
-
-## 1.3 Interactive models
-
-``` r
-penguins %>% 
-  ggplot(aes(x = body_mass_g,
-             y = flipper_length_mm,
-             color = species)) +
-  geom_point() +
-  geom_smooth(method = "lm")
-```
-
 ![](README_files/figure-commonmark/unnamed-chunk-8-1.png)
 
 ------------------------------------------------------------------------
@@ -216,7 +211,8 @@ penguins %>%
 
 ### Render to PDF
 
-When you have finished, practice the GitHub push/pull:
+When you have finished, remember to pull, stage, commit, and push with
+GitHub:
 
 - Pull to check for updates to the remote branch
 - Stage your edits (after saving your document!) by checking the
@@ -224,4 +220,4 @@ When you have finished, practice the GitHub push/pull:
 - Commit your changes with a commit message
 - Push your changes to the remote branch
 
-And submit the well-labeled PDF on Gradescope. Thanks!
+Then submit the well-labeled PDF on Gradescope. Thanks!
