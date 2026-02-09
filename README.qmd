@@ -314,7 +314,7 @@ How did adding `species` change the results of our model? Fill in the blanks in 
 
 *The results from the univariate regression of `bill depth ~ bill length` indicate that the effect of bill length on bill depth was a change of ____mm of bill depth for every 1mm of bill length. When we add in `species`, the results from the multivariate regression of `bill depth ~ bill length + species` indicate that the effect of bill length on bill depth was a change of ____mm of bill depth for every 1mm of bill length.* (Remember to add in a few extra sentences here)
 
-
+This part is super important! If you're confused about what the point here is or if you or your partner would like additional explanation, please ask Calvin or Malin :)
 
 --------
 

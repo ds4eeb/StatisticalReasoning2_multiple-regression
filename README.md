@@ -533,6 +533,10 @@ effect of bill length on bill depth was a change of \_\_\_\_mm of bill
 depth for every 1mm of bill length.* (Remember to add in a few extra
 sentences here)
 
+This part is super important! If you’re confused about what the point
+here is or if you or your partner would like additional explanation,
+please ask Calvin or Malin :)
+
 ------------------------------------------------------------------------
 
 #### Plot predictions
