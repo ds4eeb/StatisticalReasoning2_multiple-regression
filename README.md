@@ -449,6 +449,18 @@ credible intervals are between 0.16 and 0.23, indicating that we can be
 confident that zero is not consistent with our model’s estimate of
 slope.
 
+**This is an additive model**, which means that that the effect of one
+predictor is treated as independent of other predictors. Rephrased, this
+means that this model structure assumes that the effect of bill length
+on bill depth *will not change differ between species*. If we think of
+this graphically, it means that this model forces each species to have
+the exact same slope. In our example, this seems like a fine assumption:
+in the graph above, notice that the slopes that geom_smooth() puts on
+the graph are basically parallel (parallel lines = equal slopes). If we
+feel that the slope should actually be different for each species, then
+we would use an *interactive model* instead of an *additive model*, but
+don’t worry about that - we’ll get to that later in the quarter!
+
 ``` r
 # compatibility interval. the shows uncertainty in the average response.
 confm.depth.length.species <- predict_response(m.depth.length.species,
@@ -516,7 +528,7 @@ plot(confm.depth.length.species, show_data = TRUE)
 
 ![](README_files/figure-commonmark/unnamed-chunk-18-2.png)
 
-### Q1.6 Describe how your conclusions changed between running the univariate regression and the multiple regression
+### Q1.7 Describe how your conclusions changed between running the univariate regression and the multiple regression
 
 How did adding `species` change the results of our model? Fill in the
 blanks and add a couple sentences at the end explaining how your
@@ -533,7 +545,135 @@ depth for every 1mm of bill length.*
 
 ------------------------------------------------------------------------
 
-# 2. Run multiple regression on your own
+# 2. Run multiple regression on Iris data
+
+Now it’s your turn. We’re going to use the Iris flower trait data to ask
+the question: Does flower petal length vary with sepal length and with
+species of iris?
+
+``` r
+iris <- datasets::iris
+```
+
+``` r
+# flipper length by body mass model
+m.petal.sepal.species <- 
+  brm(data = iris, # Give the model the penguins data
+      # Choose a gaussian (normal) distribution
+      family = gaussian,
+      # Specify the model here. 
+      Petal.Length ~ 0 + Sepal.Length + Species,
+      # Here's where you specify parameters for executing the Markov chains
+      # We're using similar to the defaults, except we set cores to 4 so the analysis runs faster than the default of 1
+      iter = 2000, warmup = 1000, chains = 4, cores = 4,
+      # Setting the "seed" determines which random numbers will get sampled.
+      # In this case, it makes the randomness of the Markov chain runs reproducible 
+      # (so that both of us get the exact same results when running the model)
+      seed = 4,
+      # Save the fitted model object as output - helpful for reloading in the output later
+      file = "output/m.petal.sepal.species")
+```
+
+``` r
+summary(m.petal.sepal.species)
+```
+
+     Family: gaussian 
+      Links: mu = identity 
+    Formula: Petal.Length ~ 0 + Sepal.Length + Species 
+       Data: iris (Number of observations: 150) 
+      Draws: 4 chains, each with iter = 2000; warmup = 1000; thin = 1;
+             total post-warmup draws = 4000
+
+    Regression Coefficients:
+                      Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+    Sepal.Length          0.64      0.05     0.55     0.73 1.00      737      784
+    Speciessetosa        -1.72      0.23    -2.19    -1.26 1.00      747      827
+    Speciesversicolor     0.49      0.28    -0.07     1.02 1.01      740      777
+    Speciesvirginica      1.37      0.31     0.75     1.97 1.00      737      826
+
+    Further Distributional Parameters:
+          Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+    sigma     0.28      0.02     0.25     0.32 1.00     1299     1247
+
+    Draws were sampled using sampling(NUTS). For each parameter, Bulk_ESS
+    and Tail_ESS are effective sample size measures, and Rhat is the potential
+    scale reduction factor on split chains (at convergence, Rhat = 1).
+
+``` r
+plot(m.petal.sepal.species)
+```
+
+![](README_files/figure-commonmark/unnamed-chunk-21-1.png)
+
+------------------------------------------------------------------------
+
+### Q2.1 Make a hypothesis
+
+*Before* you look at the data, what direction of an effect do you
+expect? Why? Also, do you think species will be an important factor?
+Please write 1-2 sentences.
+
+------------------------------------------------------------------------
+
+### Q2.2 Graph the data
+
+Graph petal length on the y-axis and include sepal length on the x and
+species of iris as the point color.
+
+------------------------------------------------------------------------
+
+### Q2.3 Set up and run a model
+
+Set up and run an additive multiple regression model that answers the
+question above.
+
+------------------------------------------------------------------------
+
+### Q2.4 Assess the model
+
+Assess whether the model ran correctly by looking at R hat, the chains,
+and the posterior distributions. Describe your thought process about
+whether the model ran correctly in 1-2 sentences.
+
+------------------------------------------------------------------------
+
+### Q2.5 Interpret the model
+
+Interpret your model by answering:
+
+1.  What is the effect of sepal length on petal length? Remember to
+    describe the effect using the units to make it biologically
+    meaningful. Is the effect reasonably different from zero? How do you
+    know?
+2.  How does petal length vary with species?
+
+------------------------------------------------------------------------
+
+### Q2.6 Plot the model on the data
+
+Plot either a compatibility interval or prediction interval on the data;
+specify which you are using.
+
+------------------------------------------------------------------------
+
+### Q2.7 Write a small results paragraph
+
+Including the information from Q2.6, write 2-3 sentences as if you were
+writing the results section of a scientific paper. Include a conclusion
+sentence that summarizes your finding.
+
+------------------------------------------------------------------------
+
+### Bonus: See how your result changes if you leave `Species` out
+
+If you have time at the end, rerun the analysis but this time leave out
+`Species` so the model is just `Petal.Length ~ 1 + Sepal.Length`.
+Remember to change the name of a) your model object and b) the file name
+in the `file = "output/..."` argument.
+
+Answer: How did adding Species as a variable change the magnitude of the
+effect of Sepal length on Petal length?
 
 ------------------------------------------------------------------------
 
