@@ -201,6 +201,9 @@ Look at the output from the code you just ran.
 (Need to make a point about geom_smooth() only graphing interactive
 models by default)
 
+Now it’s time to get into multiple regression. In particular, we are
+going to use additive multiple regression.
+
 Let’s start by plotting a new set of variables. Now we’re asking: are
 bill length and bill depth associated among the penguins in the dataset?
 
@@ -211,12 +214,15 @@ penguins %>%
   ggplot(aes(x = bill_length_mm,
              y = bill_depth_mm)) +
   geom_point() +
+  # Let's add in a basic lm just to visualize
   geom_smooth(method = "lm")
 ```
 
 ![](README_files/figure-commonmark/unnamed-chunk-8-1.png)
 
 ### Run a normal univariate model
+
+Now let’s run a normal univariate model with these two variables:
 
 ``` r
 # flipper length by body mass model
@@ -263,25 +269,36 @@ summary(m.depth.length)
     and Tail_ESS are effective sample size measures, and Rhat is the potential
     scale reduction factor on split chains (at convergence, Rhat = 1).
 
-### Q1.4 Write a couple results sentences with your conclusions about whether bill length is associated with bill depth given this model
+``` r
+plot(m.depth.length)
+```
+
+![](README_files/figure-commonmark/unnamed-chunk-11-1.png)
+
+The Rhat, posterior distributions, and chains look good, so we can say
+that our model ran well.
+
+------------------------------------------------------------------------
+
+### Q1.4 Write a couple results sentences with your conclusions about whether bill length is associated with bill depth given this model. Include the estimate for the slope and it’s biological interpretation, as well as whether or not this slope seems different from zero (and why you think that).
 
 ------------------------------------------------------------------------
 
 ### Run the same model with species as a second predictor
 
-From our past experience, we know that there’s more to this penguin
-story. In fact, there are three separate species of penguins here. Let’s
-modify our question to be:
+Time to do multiple regression!! From our past experience, we know that
+there’s more to this penguin story. In fact, there are three separate
+species of penguins here. Let’s modify our question to be:
 
 Are bill length and bill depth associated among the penguins in the
 dataset, and does bill depth differ with penguin species?
 
 To answer this question, we need to turn to multiple regression, where
-we will add in species as a variable to our model. Let’s do that
-straight away. We are simply going to add in the species column to our
+we will add in `species` as a variable to our model. Let’s do that
+straight away. We are simply going to add in the `species` column to our
 model from above. We are also going to change the “intercept” to 0; this
 will allow for a bit easier of interpretation of the effect of the
-categorical variable of species.
+categorical variable of `species.`
 
 ``` r
 # flipper length by body mass model
@@ -302,10 +319,12 @@ m.depth.length.species <-
       file = "output/m.depth.length.species")
 ```
 
+------------------------------------------------------------------------
+
 ### Q1.5 Assess the model: did it run correctly?
 
-Assess the model using Rhat, the posterior distributions, and plot of
-chains: did it run well?
+Assess the model using Rhat, the posterior distributions, and the plot
+of chains: did it run well?
 
 ``` r
 summary(m.depth.length.species)
@@ -337,7 +356,9 @@ summary(m.depth.length.species)
 plot(m.depth.length.species)
 ```
 
-![](README_files/figure-commonmark/unnamed-chunk-13-1.png)
+![](README_files/figure-commonmark/unnamed-chunk-14-1.png)
+
+------------------------------------------------------------------------
 
 ### Interpret an additive model
 
@@ -370,16 +391,21 @@ summary(m.depth.length.species)
     and Tail_ESS are effective sample size measures, and Rhat is the potential
     scale reduction factor on split chains (at convergence, Rhat = 1).
 
+------------------------------------------------------------------------
+
+#### The effect of species
+
 You’ll notice that added to the table is not a single “Species”
 coefficient estimate, but three coefficient estimates: one for each
-factor in our `species` column. Our model is a model of bill depth \~
-bill length with *three separate intercepts*, one for each of the three
-species. We haven’t really talked about intercepts in the activities,
-but intercepts are the y-value when the x-value equals zero. This isn’t
-super biologically meaningful in that sense (because the bill width of a
-penguin will almost certainly not be 10.65 when the bill length equals
-0…), BUT, in an additive model, it tells us the relative differences
-between the different factor levels. In other words, it tells us the
+factor in our `species` column. Our model is a model of
+`bill depth ~ bill length` with *three separate intercepts*, one for
+each of the three species. We haven’t really talked about intercepts in
+the activities, but intercepts are the y-value when the x-value equals
+zero. This isn’t super biologically meaningful in that sense (because
+the bill width of a penguin will almost certainly not be 10.65 when the
+bill length equals 0…), BUT, in an additive model, it tells us the
+relative differences between the different factor levels across all
+values of your other variable. In other words, it tells us the
 differences in bill width between species.
 
 For instance, the value for Gentoo is 5.55, for Chinstrap it’s 8.73, and
@@ -400,14 +426,28 @@ penguins %>%
   geom_smooth(method = "lm")
 ```
 
-![](README_files/figure-commonmark/unnamed-chunk-15-1.png)
+![](README_files/figure-commonmark/unnamed-chunk-16-1.png)
 
-``` r
-penguins$species %>% unique()
-```
+#### Q1.6 Visually measure differences in bill depth between species
 
-    [1] Adelie    Gentoo    Chinstrap
-    Levels: Adelie Chinstrap Gentoo
+Visually measure differences in bill depth between species; choose a
+region of the x-axis which has data for all three species (e.g. around
+45mm). Estimate the difference in bill depth (the y-axis) between a)
+Adelie and Chinstrap and b) Adelie and Gentoo. Are those differences
+consistent with the differences that we calculated from the model?
+
+------------------------------------------------------------------------
+
+#### The effect of bill length
+
+Now let’s move on to interpreting the slope, which in this case is the
+effect of `bill length`.
+
+The model output gave us a slope estimate of 0.20, which we interpret as
+for every 1mm of bill length, bill depth increases by 0.20mm. The 95%
+credible intervals are between 0.16 and 0.23, indicating that we can be
+confident that zero is not consistent with our model’s estimate of
+slope.
 
 ``` r
 # compatibility interval. the shows uncertainty in the average response.
@@ -454,12 +494,12 @@ plot(confm.depth.length.species, show_data = TRUE)
 
     $bill_length_mm
 
-![](README_files/figure-commonmark/unnamed-chunk-16-1.png)
+![](README_files/figure-commonmark/unnamed-chunk-17-1.png)
 
 
     $species
 
-![](README_files/figure-commonmark/unnamed-chunk-16-2.png)
+![](README_files/figure-commonmark/unnamed-chunk-17-2.png)
 
 ``` r
 # prediction interval. this shows uncertainty in the data around the average response.
@@ -469,14 +509,27 @@ plot(confm.depth.length.species, show_data = TRUE)
 
     $bill_length_mm
 
-![](README_files/figure-commonmark/unnamed-chunk-17-1.png)
+![](README_files/figure-commonmark/unnamed-chunk-18-1.png)
 
 
     $species
 
-![](README_files/figure-commonmark/unnamed-chunk-17-2.png)
+![](README_files/figure-commonmark/unnamed-chunk-18-2.png)
 
-### Q1.X Describe how your conclusions changed between running
+### Q1.6 Describe how your conclusions changed between running the univariate regression and the multiple regression
+
+How did adding `species` change the results of our model? Fill in the
+blanks and add a couple sentences at the end explaining how your
+interpretation of the effect of `bill length` on `bill depth` changed
+upon adding `species`.
+
+*The results from the univariate regression of
+`bill depth ~ bill length` indicate that the effect of bill length on
+bill depth was a change of \_\_\_\_mm of bill depth for every 1mm of
+bill length. When we add in `species`, the results from the multivariate
+regression of `bill depth ~ bill length + species` indicate that the
+effect of bill length on bill depth was a change of \_\_\_\_mm of bill
+depth for every 1mm of bill length.*
 
 ------------------------------------------------------------------------
 
