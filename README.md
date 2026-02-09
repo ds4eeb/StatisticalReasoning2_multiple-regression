@@ -1,9 +1,15 @@
-Activity 9: Statistical reasoning 2: multiple regression
+Activity 10: Statistical reasoning 2: multiple regression
 ================
 
 Welcome! This is the second statistical reasoning activity. We will
 learn how to implement multiple regression models using the `brms`
-package and get more practice interpreting coefficients.
+package, specifically additive models, and get more practice
+interpreting coefficients.
+
+The goals of this activity are to 1) understand how to interpret output
+from an additive multiple regression model and 2) understand how adding
+additional predictor variables to a model may change your interpretation
+of other predictor variables.
 
 ------------------------------------------------------------------------
 
@@ -63,21 +69,29 @@ refresher on interpreting a simpler linear regression
 
 ## 1.1 Refresh on coefficients
 
-This section: Univariate regression of flipper length \~ body mass
+Let’s run a univariate linear regression of `flipper length ~ body mass`
+across all penguins in the dataset.
+
+First, let’s fetch and plot the data.
 
 ``` r
 penguins <- palmerpenguins::penguins
+```
 
+``` r
 penguins %>% 
   ggplot(aes(x = body_mass_g,
              y = flipper_length_mm)) +
   geom_point() +
+  # Add a geom_smooth with an "lm" line for visualization
   geom_smooth(method = "lm")
 ```
 
-![](README_files/figure-commonmark/unnamed-chunk-2-1.png)
+![](README_files/figure-commonmark/unnamed-chunk-3-1.png)
 
-Run the model
+------------------------------------------------------------------------
+
+Next, let’s run the model, just like in last activity.
 
 ``` r
 # flipper length by body mass model
@@ -98,7 +112,10 @@ m.flip.mass <-
       file = "output/m.flip.mass")
 ```
 
-Assess the model fitting by looking at Rhat:
+------------------------------------------------------------------------
+
+Next, let’s assess the model fitting by looking at Rhat: Rhat is 1 -
+looks good!
 
 ``` r
 summary(m.flip.mass)
@@ -124,20 +141,32 @@ summary(m.flip.mass)
     and Tail_ESS are effective sample size measures, and Rhat is the potential
     scale reduction factor on split chains (at convergence, Rhat = 1).
 
-Rhat is 1 - looks good!
+------------------------------------------------------------------------
+
+Next up for assessing the model, let’s look at the posterior
+distributions and model chains. Remember, we’re looking for three
+things:
+
+1.  Are the posterior samples on the left each a smooth distribution,
+    with one clean peak, or do they have multiple clear peaks? The
+    latter is a bad sign. They look good in this case.
+2.  Are the four chains on the overlapping each other, or are they
+    clearly separate? The latter is a bad sign. We again look good in
+    this case.
+3.  Are the four chains flat, or is there a clear trend up or down? The
+    latter is a bad sign. We again look good in this case.
 
 ``` r
 plot(m.flip.mass)
 ```
 
-![](README_files/figure-commonmark/unnamed-chunk-5-1.png)
+![](README_files/figure-commonmark/unnamed-chunk-6-1.png)
 
-Looks like the chains converged nicely and the posterior distributions
-are smooth. Nice!
+------------------------------------------------------------------------
 
 Now let’s dig into the actual results by examining the parameter
-estimates. We can look at the posterior plots (just above) and look at
-the parameter estimates and 95% compatibility intervals from the model
+estimates. We can look at the posterior plots (above) and look at the
+parameter estimates and 95% compatibility intervals from the model
 summary:
 
 ``` r
@@ -170,10 +199,11 @@ summary(m.flip.mass)
     flipper length (e.g. the slope)? Report your result using the units
     of these variables.
 
-2)  Do a quick visual estimate of the slope from the ggplot graph above
-    (e.g. take two points and calculate the difference in y divided by
-    the difference in x). What is your estimate? To what extent does the
-    model’s slope effect match up with your slope from the ggplot?
+2)  Do a quick visual estimate of the slope from the ggplot graph at the
+    beginning (e.g. take two points and calculate the difference in y
+    divided by the difference in x). What is your estimate? To what
+    extent does the model’s slope effect match up with your slope from
+    the ggplot?
 
 ------------------------------------------------------------------------
 
@@ -183,29 +213,40 @@ Using what you learned last class, interpret whether the slope seems to
 have a low or high probability of being different from zero. What do you
 conclude? Why or why not do you reach this conclusion?
 
-|                                                                                                                                                                                                                                                                                                              |
-|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Let’s also do this calculation more precisely by adding up the fraction of the posterior that is greater than zero.                                                                                                                                                                                          |
-| ::: {.cell}                                                                                                                                                                                                                                                                                                  |
-| `{.r .cell-code} as_draws_df(m.flip.mass) |> # extract the posterior samples from the model estimate select(b_body_mass_g) |> # pull out the latitude samples from all 4 chains. we'll get a warning that we can ignore. summarize(p_slope_greaterthan_zero = sum(b_body_mass_g > 0)/length(b_body_mass_g))` |
-| ::: {.cell-output .cell-output-stdout}                                                                                                                                                                                                                                                                       |
+------------------------------------------------------------------------
 
 ### Q1.3: What is the probability that the slope is different from zero?
 
-Look at the output from the code you just ran.
+Let’s also do this calculation more precisely by adding up the fraction
+of the posterior that is greater than zero.
+
+``` r
+as_draws_df(m.flip.mass) |> # extract the posterior samples from the model estimate
+  select(b_body_mass_g) |> # pull out the latitude samples from all 4 chains. we'll get a warning that we can ignore.
+  summarize(p_slope_greaterthan_zero = sum(b_body_mass_g > 0)/length(b_body_mass_g))
+```
+
+    # A tibble: 1 × 1
+      p_slope_greaterthan_zero
+                         <dbl>
+    1                        1
+
+Look at the output from the code you just ran and report the probability
+that the slope is different from zero.
 
 ------------------------------------------------------------------------
 
 ## 1.2 Additive models
 
-(Need to make a point about geom_smooth() only graphing interactive
-models by default)
-
 Now it’s time to get into multiple regression. In particular, we are
-going to use additive multiple regression.
+going to use additive multiple regression models. Writing an additive
+model tells the model that the 2+ predictor variables don’t influence
+one another’s effect on the response (more on an alternate to additive
+models below).
 
-Let’s start by plotting a new set of variables. Now we’re asking: are
-bill length and bill depth associated among the penguins in the dataset?
+Let’s start by plotting a new set of variables. Now we’re asking: What
+is the effect of bill length on bill depth among the penguins in the
+dataset?
 
 Let’s plot the data first
 
@@ -218,11 +259,19 @@ penguins %>%
   geom_smooth(method = "lm")
 ```
 
-![](README_files/figure-commonmark/unnamed-chunk-8-1.png)
+![](README_files/figure-commonmark/unnamed-chunk-9-1.png)
+
+### Q1.4: Does bill length seem to have an effect on bill depth?
+
+Qualitatively, does bill length seem to have a positive, negative, or no
+effect on bill depth?
+
+------------------------------------------------------------------------
 
 ### Run a normal univariate model
 
-Now let’s run a normal univariate model with these two variables:
+Now let’s test this by running a normal univariate model with these two
+variables:
 
 ``` r
 # flipper length by body mass model
@@ -242,6 +291,8 @@ m.depth.length <-
       # Save the fitted model object as output - helpful for reloading in the output later
       file = "output/m.depth.length")
 ```
+
+------------------------------------------------------------------------
 
 ### Assess and interpret the univariate model
 
@@ -273,14 +324,18 @@ summary(m.depth.length)
 plot(m.depth.length)
 ```
 
-![](README_files/figure-commonmark/unnamed-chunk-11-1.png)
+![](README_files/figure-commonmark/unnamed-chunk-12-1.png)
 
 The Rhat, posterior distributions, and chains look good, so we can say
 that our model ran well.
 
 ------------------------------------------------------------------------
 
-### Q1.4 Write a couple results sentences with your conclusions about whether bill length is associated with bill depth given this model. Include the estimate for the slope and it’s biological interpretation, as well as whether or not this slope seems different from zero (and why you think that).
+### Q1.5 Write a couple “results section” sentences with your conclusions about whether bill length is associated with bill depth given this model.
+
+Include the estimate for the slope and it’s biological interpretation,
+as well as whether or not this slope seems different from zero (and why
+you think that).
 
 ------------------------------------------------------------------------
 
@@ -290,15 +345,14 @@ Time to do multiple regression!! From our past experience, we know that
 there’s more to this penguin story. In fact, there are three separate
 species of penguins here. Let’s modify our question to be:
 
-Are bill length and bill depth associated among the penguins in the
-dataset, and does bill depth differ with penguin species?
+*Does bill length influence bill depth and does bill depth differ with
+penguin species?*
 
 To answer this question, we need to turn to multiple regression, where
-we will add in `species` as a variable to our model. Let’s do that
-straight away. We are simply going to add in the `species` column to our
-model from above. We are also going to change the “intercept” to 0; this
-will allow for a bit easier of interpretation of the effect of the
-categorical variable of `species.`
+we will add in `species` as a variable to our model. We are simply going
+to add in the `species` column to our model from above. We are also
+going to change the “intercept” to 0; this will allow for a bit easier
+interpretation of the effect of the categorical variable of `species.`
 
 ``` r
 # flipper length by body mass model
@@ -321,7 +375,7 @@ m.depth.length.species <-
 
 ------------------------------------------------------------------------
 
-### Q1.5 Assess the model: did it run correctly?
+### Q1.6 Assess the model: did it run correctly?
 
 Assess the model using Rhat, the posterior distributions, and the plot
 of chains: did it run well?
@@ -356,7 +410,7 @@ summary(m.depth.length.species)
 plot(m.depth.length.species)
 ```
 
-![](README_files/figure-commonmark/unnamed-chunk-14-1.png)
+![](README_files/figure-commonmark/unnamed-chunk-15-1.png)
 
 ------------------------------------------------------------------------
 
@@ -393,7 +447,7 @@ summary(m.depth.length.species)
 
 ------------------------------------------------------------------------
 
-#### The effect of species
+#### The effect of species (a categorical variable)
 
 You’ll notice that added to the table is not a single “Species”
 coefficient estimate, but three coefficient estimates: one for each
@@ -405,8 +459,8 @@ zero. This isn’t super biologically meaningful in that sense (because
 the bill width of a penguin will almost certainly not be 10.65 when the
 bill length equals 0…), BUT, in an additive model, it tells us the
 relative differences between the different factor levels across all
-values of your other variable. In other words, it tells us the
-differences in bill width between species.
+values of your other variable. *In other words, it tells us the
+differences in bill width between species.*
 
 For instance, the value for Gentoo is 5.55, for Chinstrap it’s 8.73, and
 for Adelie it’s 10.64. Let’s directly compare Adelie and Chinstrap. This
@@ -426,9 +480,9 @@ penguins %>%
   geom_smooth(method = "lm")
 ```
 
-![](README_files/figure-commonmark/unnamed-chunk-16-1.png)
+![](README_files/figure-commonmark/unnamed-chunk-17-1.png)
 
-#### Q1.6 Visually measure differences in bill depth between species
+#### Q1.7 Visually measure differences in bill depth between species
 
 Visually measure differences in bill depth between species; choose a
 region of the x-axis which has data for all three species (e.g. around
@@ -443,23 +497,45 @@ consistent with the differences that we calculated from the model?
 Now let’s move on to interpreting the slope, which in this case is the
 effect of `bill length`.
 
-The model output gave us a slope estimate of 0.20, which we interpret as
-for every 1mm of bill length, bill depth increases by 0.20mm. The 95%
-credible intervals are between 0.16 and 0.23, indicating that we can be
-confident that zero is not consistent with our model’s estimate of
+The model output gave us a slope estimate of 0.20, which we interpret
+as: for every 1mm of bill length, bill depth increases by 0.20mm. The
+95% credible intervals are between 0.16 and 0.23, indicating that we can
+be confident that zero is not consistent with our model’s estimate of
 slope.
 
 **This is an additive model**, which means that that the effect of one
 predictor is treated as independent of other predictors. Rephrased, this
 means that this model structure assumes that the effect of bill length
-on bill depth *will not change differ between species*. If we think of
-this graphically, it means that this model forces each species to have
-the exact same slope. In our example, this seems like a fine assumption:
-in the graph above, notice that the slopes that geom_smooth() puts on
-the graph are basically parallel (parallel lines = equal slopes). If we
-feel that the slope should actually be different for each species, then
-we would use an *interactive model* instead of an *additive model*, but
+on bill depth *will not differ between species*. If we think of this
+graphically, it means that this model forces each species to have the
+exact same slope. In our example, this seems like a fine assumption: in
+the graph above, notice that the slopes that geom_smooth() puts on the
+graph are basically parallel (parallel lines = equal slopes). If we feel
+that the slope should actually be different for each species, then we
+would use an *interactive model* instead of an *additive model*, but
 don’t worry about that - we’ll get to that later in the quarter!
+
+------------------------------------------------------------------------
+
+### Q1.8 Describe how your conclusions changed between running the univariate regression and the multiple regression
+
+How did adding `species` change the results of our model? Fill in the
+blanks in the paragraph below and add a couple sentences at the end
+explaining how your interpretation of the effect of `bill length` on
+`bill depth` changed upon adding `species`.
+
+*The results from the univariate regression of
+`bill depth ~ bill length` indicate that the effect of bill length on
+bill depth was a change of \_\_\_\_mm of bill depth for every 1mm of
+bill length. When we add in `species`, the results from the multivariate
+regression of `bill depth ~ bill length + species` indicate that the
+effect of bill length on bill depth was a change of \_\_\_\_mm of bill
+depth for every 1mm of bill length.* (Remember to add in a few extra
+sentences here)
+
+------------------------------------------------------------------------
+
+#### Plot predictions (not working as expected)
 
 ``` r
 # compatibility interval. the shows uncertainty in the average response.
@@ -506,12 +582,12 @@ plot(confm.depth.length.species, show_data = TRUE)
 
     $bill_length_mm
 
-![](README_files/figure-commonmark/unnamed-chunk-17-1.png)
+![](README_files/figure-commonmark/unnamed-chunk-18-1.png)
 
 
     $species
 
-![](README_files/figure-commonmark/unnamed-chunk-17-2.png)
+![](README_files/figure-commonmark/unnamed-chunk-18-2.png)
 
 ``` r
 # prediction interval. this shows uncertainty in the data around the average response.
@@ -521,27 +597,12 @@ plot(confm.depth.length.species, show_data = TRUE)
 
     $bill_length_mm
 
-![](README_files/figure-commonmark/unnamed-chunk-18-1.png)
+![](README_files/figure-commonmark/unnamed-chunk-19-1.png)
 
 
     $species
 
-![](README_files/figure-commonmark/unnamed-chunk-18-2.png)
-
-### Q1.7 Describe how your conclusions changed between running the univariate regression and the multiple regression
-
-How did adding `species` change the results of our model? Fill in the
-blanks and add a couple sentences at the end explaining how your
-interpretation of the effect of `bill length` on `bill depth` changed
-upon adding `species`.
-
-*The results from the univariate regression of
-`bill depth ~ bill length` indicate that the effect of bill length on
-bill depth was a change of \_\_\_\_mm of bill depth for every 1mm of
-bill length. When we add in `species`, the results from the multivariate
-regression of `bill depth ~ bill length + species` indicate that the
-effect of bill length on bill depth was a change of \_\_\_\_mm of bill
-depth for every 1mm of bill length.*
+![](README_files/figure-commonmark/unnamed-chunk-19-2.png)
 
 ------------------------------------------------------------------------
 
@@ -554,57 +615,6 @@ species of iris?
 ``` r
 iris <- datasets::iris
 ```
-
-``` r
-# flipper length by body mass model
-m.petal.sepal.species <- 
-  brm(data = iris, # Give the model the penguins data
-      # Choose a gaussian (normal) distribution
-      family = gaussian,
-      # Specify the model here. 
-      Petal.Length ~ 0 + Sepal.Length + Species,
-      # Here's where you specify parameters for executing the Markov chains
-      # We're using similar to the defaults, except we set cores to 4 so the analysis runs faster than the default of 1
-      iter = 2000, warmup = 1000, chains = 4, cores = 4,
-      # Setting the "seed" determines which random numbers will get sampled.
-      # In this case, it makes the randomness of the Markov chain runs reproducible 
-      # (so that both of us get the exact same results when running the model)
-      seed = 4,
-      # Save the fitted model object as output - helpful for reloading in the output later
-      file = "output/m.petal.sepal.species")
-```
-
-``` r
-summary(m.petal.sepal.species)
-```
-
-     Family: gaussian 
-      Links: mu = identity 
-    Formula: Petal.Length ~ 0 + Sepal.Length + Species 
-       Data: iris (Number of observations: 150) 
-      Draws: 4 chains, each with iter = 2000; warmup = 1000; thin = 1;
-             total post-warmup draws = 4000
-
-    Regression Coefficients:
-                      Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
-    Sepal.Length          0.64      0.05     0.55     0.73 1.00      737      784
-    Speciessetosa        -1.72      0.23    -2.19    -1.26 1.00      747      827
-    Speciesversicolor     0.49      0.28    -0.07     1.02 1.01      740      777
-    Speciesvirginica      1.37      0.31     0.75     1.97 1.00      737      826
-
-    Further Distributional Parameters:
-          Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
-    sigma     0.28      0.02     0.25     0.32 1.00     1299     1247
-
-    Draws were sampled using sampling(NUTS). For each parameter, Bulk_ESS
-    and Tail_ESS are effective sample size measures, and Rhat is the potential
-    scale reduction factor on split chains (at convergence, Rhat = 1).
-
-``` r
-plot(m.petal.sepal.species)
-```
-
-![](README_files/figure-commonmark/unnamed-chunk-21-1.png)
 
 ------------------------------------------------------------------------
 
@@ -672,8 +682,8 @@ If you have time at the end, rerun the analysis but this time leave out
 Remember to change the name of a) your model object and b) the file name
 in the `file = "output/..."` argument.
 
-Answer: How did adding Species as a variable change the magnitude of the
-effect of Sepal length on Petal length?
+Answer this: How did adding `Species` as a variable change the magnitude
+of the effect of Sepal length on Petal length?
 
 ------------------------------------------------------------------------
 
