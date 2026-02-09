@@ -319,17 +319,28 @@ How did adding `species` change the results of our model? Fill in the blanks in 
 --------
 
 
-#### Plot predictions (not working as expected)
+#### Plot predictions
+
+Last activity you were asked to plot the model predictions using the `predict_response()` function. Doing this for an additive model changes things up a bit. Let's try it:
 
 ```{r}
 # compatibility interval. the shows uncertainty in the average response.
-confm.depth.length.species <- predict_response(m.depth.length.species,
-                                               condition = c(bill_length_mm = 0,
-                                                             species = c(penguins$species %>% unique())))
-confm.depth.length.species
-plot(confm.depth.length.species, show_data = TRUE) 
+confm.depth.length.species <- predict_response(m.depth.length.species)
 
+plot(confm.depth.length.species, show_data = TRUE)
 ```
+
+Note that it gives you two graphs: One for the slope estimate, one for each species' intercept estimates. The slope is only plotted for one species though. Let's take a look at the function output:
+
+```{r}
+confm.depth.length.species
+```
+
+The output specifies that it plotted the slope `Adjusted for: * species = Adelie` and it plotted the species intercepts `Adjusted for: * bill_length_mm = 43.92`. This means that it just chose a value of each predictor to report the OTHER predictor's output at. You can adjust which value it chooses with the `condition = ` argument. 
+
+We are going to try and find a better way to plot `brm` model output for next time, so don't worry too much about this right now!
+
+We can do this for the prediction interval too
 
 ```{r}
 # prediction interval. this shows uncertainty in the data around the average response.
@@ -383,15 +394,10 @@ Interpret your model by answering:
 1.    What is the effect of sepal length on petal length? Remember to describe the effect using the units to make it biologically meaningful. Is the effect reasonably different from zero? How do you know?
 2.    How does petal length vary with species?
 
----------
-
-### Q2.6 Plot the model on the data
-
-Plot either a compatibility interval or prediction interval on the data; specify which you are using.
 
 ---------
 
-### Q2.7 Write a small results paragraph
+### Q2.6 Write a small results paragraph
 
 Including the information from Q2.6, write 2-3 sentences as if you were writing the results section of a scientific paper. Include a conclusion sentence that summarizes your finding.
 

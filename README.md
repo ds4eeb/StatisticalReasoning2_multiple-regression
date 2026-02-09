@@ -535,13 +535,33 @@ sentences here)
 
 ------------------------------------------------------------------------
 
-#### Plot predictions (not working as expected)
+#### Plot predictions
+
+Last activity you were asked to plot the model predictions using the
+`predict_response()` function. Doing this for an additive model changes
+things up a bit. Let’s try it:
 
 ``` r
 # compatibility interval. the shows uncertainty in the average response.
-confm.depth.length.species <- predict_response(m.depth.length.species,
-                                               condition = c(bill_length_mm = 0,
-                                                             species = c(penguins$species %>% unique())))
+confm.depth.length.species <- predict_response(m.depth.length.species)
+
+plot(confm.depth.length.species, show_data = TRUE)
+```
+
+    $bill_length_mm
+
+![](README_files/figure-commonmark/unnamed-chunk-18-1.png)
+
+
+    $species
+
+![](README_files/figure-commonmark/unnamed-chunk-18-2.png)
+
+Note that it gives you two graphs: One for the slope estimate, one for
+each species’ intercept estimates. The slope is only plotted for one
+species though. Let’s take a look at the function output:
+
+``` r
 confm.depth.length.species
 ```
 
@@ -564,30 +584,30 @@ confm.depth.length.species
     $species
     # Predicted values of bill_depth_mm
 
-    species   | Predicted |      95% CI
-    -----------------------------------
-    Adelie    |     10.62 | 9.22, 12.07
-    Chinstrap |      8.69 | 6.93, 10.51
-    Gentoo    |      5.52 | 3.80,  7.27
+    species   | Predicted |       95% CI
+    ------------------------------------
+    Adelie    |     19.37 | 19.13, 19.60
+    Chinstrap |     17.45 | 17.17, 17.74
+    Gentoo    |     14.27 | 14.06, 14.48
 
+    Adjusted for:
+    * bill_length_mm = 43.92
 
     attr(,"class")
     [1] "ggalleffects" "list"        
     attr(,"model.name")
     [1] "m.depth.length.species"
 
-``` r
-plot(confm.depth.length.species, show_data = TRUE) 
-```
+The output specifies that it plotted the slope
+`Adjusted for: * species = Adelie` and it plotted the species intercepts
+`Adjusted for: * bill_length_mm = 43.92`. This means that it just chose
+a value of each predictor to report the OTHER predictor’s output at. You
+can adjust which value it chooses with the `condition =` argument.
 
-    $bill_length_mm
+We are going to try and find a better way to plot `brm` model output for
+next time, so don’t worry too much about this right now!
 
-![](README_files/figure-commonmark/unnamed-chunk-18-1.png)
-
-
-    $species
-
-![](README_files/figure-commonmark/unnamed-chunk-18-2.png)
+We can do this for the prediction interval too
 
 ``` r
 # prediction interval. this shows uncertainty in the data around the average response.
@@ -597,12 +617,12 @@ plot(confm.depth.length.species, show_data = TRUE)
 
     $bill_length_mm
 
-![](README_files/figure-commonmark/unnamed-chunk-19-1.png)
+![](README_files/figure-commonmark/unnamed-chunk-20-1.png)
 
 
     $species
 
-![](README_files/figure-commonmark/unnamed-chunk-19-2.png)
+![](README_files/figure-commonmark/unnamed-chunk-20-2.png)
 
 ------------------------------------------------------------------------
 
@@ -660,14 +680,7 @@ Interpret your model by answering:
 
 ------------------------------------------------------------------------
 
-### Q2.6 Plot the model on the data
-
-Plot either a compatibility interval or prediction interval on the data;
-specify which you are using.
-
-------------------------------------------------------------------------
-
-### Q2.7 Write a small results paragraph
+### Q2.6 Write a small results paragraph
 
 Including the information from Q2.6, write 2-3 sentences as if you were
 writing the results section of a scientific paper. Include a conclusion
