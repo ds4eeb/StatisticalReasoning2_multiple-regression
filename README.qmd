@@ -325,7 +325,10 @@ Last activity you were asked to plot the model predictions using the `predict_re
 
 ```{r}
 # compatibility interval. the shows uncertainty in the average response.
-confm.depth.length.species <- predict_response(m.depth.length.species)
+confm.depth.length.species <- predict_response(m.depth.length.species, terms = c('bill_length_mm', 'species'))
+
+# ggplot(data = confm.depth.length.species, aes(x = bill_length_mm, y = Predicted)) +
+#   geom_line()
 
 plot(confm.depth.length.species, show_data = TRUE)
 ```
